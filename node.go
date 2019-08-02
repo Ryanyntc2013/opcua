@@ -50,7 +50,7 @@ func (n *Node) Description() (*ua.LocalizedText, error) {
 	if err != nil {
 		return nil, err
 	}
-	return v.Value.(*ua.LocalizedText), nil
+	return v.Value().(*ua.LocalizedText), nil
 }
 
 // DisplayName returns the display name of the node.

@@ -444,7 +444,7 @@ func (m *Variant) set(v interface{}) error {
 func (m *Variant) NodeID() *NodeID {
 	switch m.Type() {
 	case TypeIDNodeID:
-		return m.Value.(*NodeID)
+		return m.Value().(*NodeID)
 	default:
 		return nil
 	}
@@ -545,7 +545,7 @@ func (m *Variant) GoString() string {
 		b.WriteString(fmt.Sprintf(", ArrayLength:%d", m.ArrayLength))
 	}
 	if m.Has(VariantArrayDimensions) {
-		b.WriteString(fmt.Sprintf(", ArrayDimensionsLength:%d", m.ArrayDimensionsLength))
+		b.WriteString(fmt.Sprintf(", ArrayDimensionsLength:%d", m.arrayDimensionsLength))
 		b.WriteString(fmt.Sprintf(", ArrayDimensions:%#v", m.ArrayDimensions))
 	}
 	b.WriteString(fmt.Sprintf(", Value:%#v", m.Value))
