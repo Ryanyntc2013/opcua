@@ -218,8 +218,10 @@ func (c *Client) Close() error {
 	if c.cancelMonitor != nil {
 		c.cancelMonitor()
 	}
-
-	return c.sechan.Close()
+	if c.sechan != nil {
+		return c.sechan.Close()
+	}
+	return io.EOF
 }
 
 // Session returns the active session.
@@ -659,6 +661,11 @@ func (c *Client) notifySubscription(ctx context.Context, response *ua.PublishRes
 				Error:          fmt.Errorf("unknown NotificationData parameter: %T", data.Value),
 			})
 		}
+	}
+	if len(response.NotificationMessage.NotificationData) <= 0 {
+		sub.sendNotification(ctx, &PublishNotificationData{
+			SubscriptionID: response.SubscriptionID,
+		})
 	}
 }
 
