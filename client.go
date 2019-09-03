@@ -532,6 +532,24 @@ func (c *Client) BrowseNext(req *ua.BrowseNextRequest) (*ua.BrowseNextResponse, 
 	return res, err
 }
 
+// Call executes a synchronous call request for a single method.
+func (c *Client) Call(req *ua.CallMethodRequest) (*ua.CallMethodResult, error) {
+	creq := &ua.CallRequest{
+		MethodsToCall: []*ua.CallMethodRequest{req},
+	}
+	var res *ua.CallResponse
+	err := c.Send(creq, func(v interface{}) error {
+		return safeAssign(v, &res)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(res.Results) != 1 {
+		return nil, ua.StatusBadUnknownResponse
+	}
+	return res.Results[0], nil
+}
+
 // Subscribe creates a Subscription with given parameters. Parameters that have not been set
 // (have zero values) are overwritten with default values.
 // See opcua.DefaultSubscription* constants
@@ -569,6 +587,12 @@ func (c *Client) Subscribe(params *SubscriptionParameters) (*Subscription, error
 		c,
 	}
 	c.subMux.Lock()
+	if sub.SubscriptionID == 0 || c.subscriptions[sub.SubscriptionID] != nil {
+		// this should not happen and is usually indicative of a server bug
+		// see: Part 4 Section 5.13.2.2, Table 88 – CreateSubscription Service Parameters
+		c.subMux.Unlock()
+		return nil, ua.StatusBadSubscriptionIDInvalid
+	}
 	c.subscriptions[sub.SubscriptionID] = sub
 	c.subMux.Unlock()
 
@@ -584,11 +608,12 @@ func (c *Client) forgetSubscription(subID uint32) {
 func (c *Client) notifySubscriptionsOfError(ctx context.Context, res *ua.PublishResponse, err error) {
 	c.subMux.RLock()
 	defer c.subMux.RUnlock()
-	var subsToNotify map[uint32]*Subscription
+
+	subsToNotify := c.subscriptions
 	if res != nil && res.SubscriptionID != 0 {
-		subsToNotify = map[uint32]*Subscription{res.SubscriptionID: c.subscriptions[res.SubscriptionID]}
-	} else {
-		subsToNotify = c.subscriptions
+		subsToNotify = map[uint32]*Subscription{
+			res.SubscriptionID: c.subscriptions[res.SubscriptionID],
+		}
 	}
 	for _, sub := range subsToNotify {
 		go func(s *Subscription) {

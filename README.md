@@ -123,9 +123,9 @@ The current set of supported services is only for the high-level client.
 |                             | QueryNext                     |           |              |
 | Attribute Service Set       | Read                          | Yes       |              |
 |                             | Write                         | Yes       |              |
-|                             | HistoryRead                   |           |              |
+|                             | HistoryRead                   | Yes       |              |
 |                             | HistoryUpdate                 |           |              |
-| Method Service Set          | Call                          |           |              |
+| Method Service Set          | Call                          | Yes       |              |
 | MonitoredItems Service Set  | CreateMonitoredItems          | Yes       |              |
 |                             | DeleteMonitoredItems          | Yes       |              |
 |                             | ModifyMonitoredItems          |           |              |
