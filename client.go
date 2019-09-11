@@ -164,7 +164,7 @@ func (c *Client) Dial(ctx context.Context) error {
 	if c.sechan != nil {
 		return fmt.Errorf("secure channel already connected")
 	}
-	conn, err := uacp.Dial(ctx, c.endpointURL)
+	conn, err := uacp.Dial(ctx, c.endpointURL, uacp.IOReadWriteTimeOutS)
 	if err != nil {
 		return err
 	}

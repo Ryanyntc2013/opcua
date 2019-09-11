@@ -35,7 +35,7 @@ func TestConn(t *testing.T) {
 		close(done)
 	}()
 
-	if _, err = Dial(ctx, ep); err != nil {
+	if _, err = Dial(ctx, ep, IOReadWriteTimeOutS); err != nil {
 		t.Error(err)
 	}
 
@@ -73,7 +73,7 @@ func TestClientWrite(t *testing.T) {
 		done <- 0
 	}()
 
-	cliConn, err := Dial(ctx, ep)
+	cliConn, err := Dial(ctx, ep, IOReadWriteTimeOutS)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func TestServerWrite(t *testing.T) {
 		done <- 0
 	}()
 
-	cliConn, err := Dial(ctx, ep)
+	cliConn, err := Dial(ctx, ep, IOReadWriteTimeOutS)
 	if err != nil {
 		t.Fatal(err)
 	}

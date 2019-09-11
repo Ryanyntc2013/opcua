@@ -24,6 +24,8 @@ const (
 	DefaultSendBufSize    = 0xffff
 	DefaultMaxChunkCount  = 512
 	DefaultMaxMessageSize = 2 * MB
+	DialTimeOutS          = 5
+	IOReadWriteTimeOutS   = 20
 )
 
 // connid stores the current connection id. updated with atomic.AddUint32
@@ -34,20 +36,21 @@ func nextid() uint32 {
 	return atomic.AddUint32(&connid, 1)
 }
 
-func Dial(ctx context.Context, endpoint string) (*Conn, error) {
+func Dial(ctx context.Context, endpoint string, timeOutS int) (*Conn, error) {
 	debug.Printf("Connect to %s", endpoint)
 	network, raddr, err := ResolveEndpoint(endpoint)
 	if err != nil {
 		return nil, err
 	}
-	c, err := net.DialTCP(network, nil, raddr)
+	c, err := net.DialTimeout(network, raddr.String(), DialTimeOutS*time.Second)
 	if err != nil {
 		return nil, err
 	}
 
 	conn := &Conn{
-		id: nextid(),
-		c:  c,
+		id:       nextid(),
+		c:        c,
+		timeOutS: timeOutS,
 		ack: &Acknowledge{
 			ReceiveBufSize: DefaultReceiveBufSize,
 			SendBufSize:    DefaultSendBufSize,
@@ -137,9 +140,10 @@ func (l *Listener) Endpoint() string {
 }
 
 type Conn struct {
-	id  uint32
-	c   net.Conn
-	ack *Acknowledge
+	id       uint32
+	c        net.Conn
+	timeOutS int
+	ack      *Acknowledge
 }
 
 func (c *Conn) ID() uint32 {
@@ -204,7 +208,6 @@ func (c *Conn) handshake(endpoint string) error {
 		MaxChunkCount:  c.ack.MaxChunkCount,
 		EndpointURL:    endpoint,
 	}
-
 	if err := c.Send("HELF", hel); err != nil {
 		return err
 	}
@@ -290,7 +293,7 @@ func (c *Conn) srvhandshake(endpoint string) error {
 		}
 		debug.Printf("conn %d: connecting to %s", c.id, rhe.ServerURI)
 		c.c.Close()
-		c, err := Dial(context.Background(), rhe.ServerURI)
+		c, err := Dial(context.Background(), rhe.ServerURI, IOReadWriteTimeOutS)
 		if err != nil {
 			return err
 		}
@@ -320,7 +323,10 @@ const hdrlen = 8
 // the function returns an error.
 func (c *Conn) Receive() ([]byte, error) {
 	b := make([]byte, c.ack.ReceiveBufSize)
-
+	if c.timeOutS > 0 {
+		timeout := time.Now().Add(time.Duration(c.timeOutS) * time.Second)
+		c.c.SetReadDeadline(timeout)
+	}
 	if _, err := io.ReadFull(c.c, b[:hdrlen]); err != nil {
 		// todo(fs): do not wrap this error since it hides io.EOF
 		// todo(fs): use golang.org/x/xerrors
@@ -335,7 +341,10 @@ func (c *Conn) Receive() ([]byte, error) {
 	if h.MessageSize > c.ack.ReceiveBufSize {
 		return nil, fmt.Errorf("uacp: message too large: %d > %d bytes", h.MessageSize, c.ack.ReceiveBufSize)
 	}
-
+	if c.timeOutS > 0 {
+		timeout := time.Now().Add(time.Duration(c.timeOutS) * time.Second)
+		c.c.SetReadDeadline(timeout)
+	}
 	if _, err := io.ReadFull(c.c, b[hdrlen:h.MessageSize]); err != nil {
 		// todo(fs): do not wrap this error since it hides io.EOF
 		// todo(fs): use golang.org/x/xerrors
@@ -380,6 +389,10 @@ func (c *Conn) Send(typ string, msg interface{}) error {
 	}
 
 	b := append(hdr, body...)
+	if c.timeOutS > 0 {
+		timeout := time.Now().Add(time.Duration(c.timeOutS) * time.Second)
+		c.c.SetWriteDeadline(timeout)
+	}
 	if _, err := c.c.Write(b); err != nil {
 		return fmt.Errorf("write failed: %s", err)
 	}
