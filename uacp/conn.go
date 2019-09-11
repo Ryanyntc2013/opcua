@@ -116,7 +116,7 @@ func (l *Listener) Accept(ctx context.Context) (*Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	conn := &Conn{nextid(), c, l.ack}
+	conn := &Conn{nextid(), c, IOReadWriteTimeOutS, l.ack}
 	if err := conn.srvhandshake(l.endpoint); err != nil {
 		c.Close()
 		return nil, err
