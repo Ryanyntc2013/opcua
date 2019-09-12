@@ -24,6 +24,7 @@ const (
 	DefaultSendBufSize    = 0xffff
 	DefaultMaxChunkCount  = 512
 	DefaultMaxMessageSize = 2 * MB
+	DialTimeOutS          = 5
 )
 
 // connid stores the current connection id. updated with atomic.AddUint32
@@ -40,7 +41,7 @@ func Dial(ctx context.Context, endpoint string) (*Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	c, err := net.DialTCP(network, nil, raddr)
+	c, err := net.DialTimeout(network, raddr.String(), DialTimeOutS*time.Second)
 	if err != nil {
 		return nil, err
 	}
