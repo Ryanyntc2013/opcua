@@ -99,7 +99,7 @@ func ParseNodeID(s string) (*NodeID, error) {
 	if cnt < 1 {
 		return nil, fmt.Errorf("invalid node id: %s", s)
 	} else if cnt == 1 {
-		nsval, idval = "ns=1", p[0]
+		nsval, idval = "ns=0", p[0]
 	} else {
 		nsval, idval = p[0], p[1]
 	}
