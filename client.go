@@ -448,7 +448,10 @@ func (c *Client) sendWithTimeout(req ua.Request, timeout time.Duration, h func(i
 	if s := c.Session(); s != nil {
 		authToken = s.resp.AuthenticationToken
 	}
-	return c.sechan.SendRequestWithTimeout(req, authToken, timeout, h)
+	if c.sechan != nil {
+		return c.sechan.SendRequestWithTimeout(req, authToken, timeout, h)
+	}
+	return fmt.Errorf("Cannot send msg on the nil sechan")
 }
 
 // Node returns a node object which accesses its attributes
