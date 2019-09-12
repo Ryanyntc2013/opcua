@@ -93,10 +93,16 @@ func ParseNodeID(s string) (*NodeID, error) {
 	}
 
 	p := strings.SplitN(s, ";", 2)
-	if len(p) < 2 {
+	cnt := len(p)
+	nsval := ""
+	idval := ""
+	if cnt < 1 {
 		return nil, fmt.Errorf("invalid node id: %s", s)
+	} else if cnt == 1 {
+		nsval, idval = "ns=1", p[0]
+	} else {
+		nsval, idval = p[0], p[1]
 	}
-	nsval, idval := p[0], p[1]
 
 	// parse namespace
 	var ns uint16
