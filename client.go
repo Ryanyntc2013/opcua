@@ -614,15 +614,18 @@ func (c *Client) notifySubscriptionsOfError(ctx context.Context, res *ua.Publish
 	defer c.subMux.RUnlock()
 
 	subsToNotify := c.subscriptions
-	if res != nil && res.SubscriptionID != 0 {
+	if res != nil && res.SubscriptionID != 0 && res.SubscriptionID != 0xFFFFFFFF {
 		subsToNotify = map[uint32]*Subscription{
 			res.SubscriptionID: c.subscriptions[res.SubscriptionID],
 		}
 	}
 	for _, sub := range subsToNotify {
-		go func(s *Subscription) {
-			s.sendNotification(ctx, &PublishNotificationData{Error: err})
-		}(sub)
+		// when res.SubscriptionID == 0xFFFFFFFF, subsToNotify may contain null pointer
+		if sub != nil {
+			go func(s *Subscription) {
+				s.sendNotification(ctx, &PublishNotificationData{Error: err})
+			}(sub)
+		}
 	}
 }
 
