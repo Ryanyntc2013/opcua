@@ -3,7 +3,6 @@
 package uatest
 
 import (
-	"fmt"
 	"net"
 	"os"
 	"os/exec"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gopcua/opcua"
+	"github.com/gopcua/opcua/errors"
 	"github.com/gopcua/opcua/ua"
 )
 
@@ -46,7 +46,18 @@ func (s *Server) Run() error {
 		return err
 	}
 	path := filepath.Join(wd, s.Path)
-	s.cmd = exec.Command("python3", path)
+
+	py, err := exec.LookPath("python3")
+	if err != nil {
+		// fallback to python and hope it still points to a python3 version.
+		// the Windows python3 installer doesn't seem to create a `python3.exe`
+		py, err = exec.LookPath("python")
+		if err != nil {
+			return errors.Errorf("unable to find Python executable")
+		}
+	}
+
+	s.cmd = exec.Command(py, path)
 	s.Endpoint = "opc.tcp://127.0.0.1:4840"
 	s.Opts = []opcua.Option{opcua.SecurityMode(ua.MessageSecurityModeNone)}
 	if err := s.cmd.Start(); err != nil {
@@ -54,7 +65,7 @@ func (s *Server) Run() error {
 	}
 
 	// wait until endpoint is available
-	deadline := time.Now().Add(3 * time.Second)
+	deadline := time.Now().Add(10 * time.Second)
 	for time.Now().Before(deadline) {
 		c, err := net.Dial("tcp", "127.0.0.1:4840")
 		if err != nil {
@@ -64,12 +75,12 @@ func (s *Server) Run() error {
 		c.Close()
 		return nil
 	}
-	return fmt.Errorf("timeout")
+	return errors.Errorf("timeout")
 }
 
 func (s *Server) Close() error {
 	if s.cmd == nil {
-		return fmt.Errorf("not running")
+		return errors.Errorf("not running")
 	}
 	go func() { s.cmd.Process.Kill() }()
 	return s.cmd.Wait()

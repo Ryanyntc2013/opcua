@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/gopcua/opcua/debug"
+	"github.com/gopcua/opcua/errors"
 	"github.com/gopcua/opcua/id"
 	"github.com/gopcua/opcua/ua"
 	"github.com/gopcua/opcua/uacp"
@@ -137,7 +138,7 @@ func (c *Client) Connect(ctx context.Context) (err error) {
 	}
 
 	if c.sechan != nil {
-		return fmt.Errorf("already connected")
+		return errors.Errorf("already connected")
 	}
 	if err := c.Dial(ctx); err != nil {
 		return err
@@ -162,7 +163,7 @@ func (c *Client) Dial(ctx context.Context) error {
 
 	c.once.Do(func() { c.session.Store((*Session)(nil)) })
 	if c.sechan != nil {
-		return fmt.Errorf("secure channel already connected")
+		return errors.Errorf("secure channel already connected")
 	}
 	conn, err := uacp.Dial(ctx, c.endpointURL)
 	if err != nil {
@@ -259,7 +260,7 @@ type Session struct {
 // See Part 4, 5.6.2
 func (c *Client) CreateSession(cfg *uasc.SessionConfig) (*Session, error) {
 	if c.sechan == nil {
-		return nil, fmt.Errorf("secure channel not connected")
+		return nil, errors.Errorf("secure channel not connected")
 	}
 
 	nonce := make([]byte, 32)
@@ -553,6 +554,20 @@ func (c *Client) Call(req *ua.CallMethodRequest) (*ua.CallMethodResult, error) {
 	return res.Results[0], nil
 }
 
+// BrowseNext executes a synchronous browse request.
+func (c *Client) BrowseNext(req *ua.BrowseNextRequest) (*ua.BrowseNextResponse, error) {
+	var res *ua.BrowseNextResponse
+	err := c.Send(req, func(v interface{}) error {
+		r, ok := v.(*ua.BrowseNextResponse)
+		if !ok {
+			return errors.Errorf("invalid response: %T", v)
+		}
+		res = r
+		return nil
+	})
+	return res, err
+}
+
 // Subscribe creates a Subscription with given parameters. Parameters that have not been set
 // (have zero values) are overwritten with default values.
 // See opcua.DefaultSubscription* constants
@@ -654,7 +669,7 @@ func (c *Client) notifySubscription(ctx context.Context, response *ua.PublishRes
 	if response.NotificationMessage == nil {
 		sub.sendNotification(ctx, &PublishNotificationData{
 			SubscriptionID: response.SubscriptionID,
-			Error:          fmt.Errorf("empty NotificationMessage"),
+			Error:          errors.Errorf("empty NotificationMessage"),
 		})
 		return
 	}
@@ -665,7 +680,7 @@ func (c *Client) notifySubscription(ctx context.Context, response *ua.PublishRes
 		if data == nil || data.Value == nil {
 			sub.sendNotification(ctx, &PublishNotificationData{
 				SubscriptionID: response.SubscriptionID,
-				Error:          fmt.Errorf("missing NotificationData parameter"),
+				Error:          errors.Errorf("missing NotificationData parameter"),
 			})
 			continue
 		}
@@ -686,7 +701,7 @@ func (c *Client) notifySubscription(ctx context.Context, response *ua.PublishRes
 		default:
 			sub.sendNotification(ctx, &PublishNotificationData{
 				SubscriptionID: response.SubscriptionID,
-				Error:          fmt.Errorf("unknown NotificationData parameter: %T", data.Value),
+				Error:          errors.Errorf("unknown NotificationData parameter: %T", data.Value),
 			})
 		}
 	}
