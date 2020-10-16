@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -67,13 +67,13 @@ func TestServerOnNetworkArray(t *testing.T) {
 		{
 			Name: "normal",
 			Struct: []*ServerOnNetwork{
-				&ServerOnNetwork{
+				{
 					RecordID:           1,
 					ServerName:         "server-name",
 					DiscoveryURL:       "discov-uri",
 					ServerCapabilities: []string{"server-cap-1"},
 				},
-				&ServerOnNetwork{
+				{
 					RecordID:           1,
 					ServerName:         "server-name",
 					DiscoveryURL:       "discov-uri",

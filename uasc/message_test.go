@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,17 @@ func TestMessage(t *testing.T) {
 		{
 			Name: "OPN",
 			Struct: func() interface{} {
-				m := NewMessage(
+				s := &SecureChannel{
+					cfg: &Config{
+						SecurityPolicyURI: "http://gopcua.example/OPCUA/SecurityPolicy#Foo",
+					},
+				}
+				instance := &channelInstance{
+					sc: s,
+					sequenceNumber:  0,
+					securityTokenID: 0,
+				}
+				m := instance.newMessage(
 					&ua.OpenSecureChannelRequest{
 						RequestHeader: &ua.RequestHeader{
 							AuthenticationToken: ua.NewTwoByteNodeID(0),
@@ -33,13 +43,7 @@ func TestMessage(t *testing.T) {
 						RequestedLifetime:     6000000,
 					},
 					id.OpenSecureChannelRequest_Encoding_DefaultBinary,
-					&Config{
-						SecureChannelID:   0,
-						SecurityPolicyURI: "http://gopcua.example/OPCUA/SecurityPolicy#Foo",
-						RequestID:         1,
-						SequenceNumber:    1,
-						SecurityTokenID:   0,
-					},
+					s.nextRequestID(),
 				)
 
 				// set message size manually, since it is computed in Encode
@@ -109,10 +113,21 @@ func TestMessage(t *testing.T) {
 				// RequestedLifetime
 				0x80, 0x8d, 0x5b, 0x00,
 			},
-		}, {
+		},
+		{
 			Name: "MSG",
 			Struct: func() interface{} {
-				m := NewMessage(
+				s := &SecureChannel{
+					cfg: &Config{
+						SecurityPolicyURI: "http://gopcua.example/OPCUA/SecurityPolicy#Foo",
+					},
+				}
+				instance := &channelInstance{
+					sc: s,
+					sequenceNumber:  0,
+					securityTokenID: 0,
+				}
+				m := instance.newMessage(
 					&ua.GetEndpointsRequest{
 						RequestHeader: &ua.RequestHeader{
 							AuthenticationToken: ua.NewTwoByteNodeID(0),
@@ -124,13 +139,7 @@ func TestMessage(t *testing.T) {
 						EndpointURL: "opc.tcp://wow.its.easy:11111/UA/Server",
 					},
 					id.GetEndpointsRequest_Encoding_DefaultBinary,
-					&Config{
-						SecureChannelID:   0,
-						SecurityPolicyURI: "http://gopcua.example/OPCUA/SecurityPolicy#Foo",
-						RequestID:         1,
-						SequenceNumber:    1,
-						SecurityTokenID:   0,
-					},
+					s.nextRequestID(),
 				)
 
 				// set message size manually, since it is computed in Encode
@@ -179,7 +188,17 @@ func TestMessage(t *testing.T) {
 		}, {
 			Name: "CLO",
 			Struct: func() interface{} {
-				m := NewMessage(
+				s := &SecureChannel{
+					cfg: &Config{
+						SecurityPolicyURI: "http://gopcua.example/OPCUA/SecurityPolicy#Foo",
+					},
+				}
+				instance := &channelInstance{
+					sc: s,
+					sequenceNumber:  0,
+					securityTokenID: 0,
+				}
+				m := instance.newMessage(
 					&ua.CloseSecureChannelRequest{
 						RequestHeader: &ua.RequestHeader{
 							AuthenticationToken: ua.NewTwoByteNodeID(0),
@@ -190,13 +209,7 @@ func TestMessage(t *testing.T) {
 						},
 					},
 					id.CloseSecureChannelRequest_Encoding_DefaultBinary,
-					&Config{
-						SecureChannelID:   0,
-						SecurityPolicyURI: "http://gopcua.example/OPCUA/SecurityPolicy#Foo",
-						RequestID:         1,
-						SequenceNumber:    1,
-						SecurityTokenID:   0,
-					},
+					s.nextRequestID(),
 				)
 
 				// set message size manually, since it is computed in Encode

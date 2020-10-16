@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -51,5 +51,5 @@ func main() {
 	if resp.Results[0].Status != ua.StatusOK {
 		log.Fatalf("Status not OK: %v", resp.Results[0].Status)
 	}
-	log.Print(resp.Results[0].Value.Value())
+	log.Printf("%#v", resp.Results[0].Value.Value())
 }

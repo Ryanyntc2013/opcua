@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ func TestFindServersOnNetworkResponse(t *testing.T) {
 				},
 				LastCounterResetTime: time.Date(2018, time.August, 10, 23, 0, 0, 0, time.UTC),
 				Servers: []*ServerOnNetwork{
-					&ServerOnNetwork{
+					{
 						RecordID:           1,
 						ServerName:         "server-name",
 						DiscoveryURL:       "discov-uri",
@@ -76,13 +76,13 @@ func TestFindServersOnNetworkResponse(t *testing.T) {
 				},
 				LastCounterResetTime: time.Date(2018, time.August, 10, 23, 0, 0, 0, time.UTC),
 				Servers: []*ServerOnNetwork{
-					&ServerOnNetwork{
+					{
 						RecordID:           1,
 						ServerName:         "server-name",
 						DiscoveryURL:       "discov-uri",
 						ServerCapabilities: []string{"server-cap-1"},
 					},
-					&ServerOnNetwork{
+					{
 						RecordID:           1,
 						ServerName:         "server-name",
 						DiscoveryURL:       "discov-uri",

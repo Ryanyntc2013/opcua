@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -39,14 +39,14 @@ func TestUserTokenPolicyArray(t *testing.T) {
 	cases := []CodecTestCase{
 		{
 			Struct: []*UserTokenPolicy{
-				&UserTokenPolicy{
+				{
 					PolicyID:          "1",
 					TokenType:         UserTokenTypeAnonymous,
 					IssuedTokenType:   "issued-token",
 					IssuerEndpointURL: "issuer-uri",
 					SecurityPolicyURI: "sec-uri",
 				},
-				&UserTokenPolicy{
+				{
 					PolicyID:          "1",
 					TokenType:         UserTokenTypeAnonymous,
 					IssuedTokenType:   "issued-token",

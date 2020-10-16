@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -48,17 +48,17 @@ func TestReadValueIDArray(t *testing.T) {
 		{
 			Name: "Normal",
 			Struct: []*ReadValueID{
-				&ReadValueID{
+				{
 					NodeID:       NewStringNodeID(1, "Temperature"),
 					AttributeID:  AttributeIDNodeClass,
 					DataEncoding: &QualifiedName{},
 				},
-				&ReadValueID{
+				{
 					NodeID:       NewStringNodeID(1, "Temperature"),
 					AttributeID:  AttributeIDBrowseName,
 					DataEncoding: &QualifiedName{},
 				},
-				&ReadValueID{
+				{
 					NodeID:       NewStringNodeID(1, "Temperature"),
 					AttributeID:  AttributeIDDisplayName,
 					DataEncoding: &QualifiedName{},

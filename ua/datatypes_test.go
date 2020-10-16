@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -54,11 +54,11 @@ func TestDataValueArray(t *testing.T) {
 		{
 			Name: "value only and value, source timestamp, server timestamp",
 			Struct: []*DataValue{
-				&DataValue{
+				{
 					EncodingMask: 0x01,
 					Value:        MustVariant(float32(2.50025)),
 				},
-				&DataValue{
+				{
 					EncodingMask:    0x0d,
 					Value:           MustVariant(float32(2.50017)),
 					SourceTimestamp: time.Date(2018, time.September, 17, 14, 28, 29, 112000000, time.UTC),
@@ -94,10 +94,30 @@ func TestGUID(t *testing.T) {
 	cases := []CodecTestCase{
 		{
 			Name:   "ok",
-			Struct: NewGUID("AAAABBBB-CCDD-EEFF-0101-0123456789AB"),
+			Struct: NewGUID("AAAABBBB-CCDD-EEFF-0102-0123456789AB"),
 			Bytes: []byte{
-				0xbb, 0xbb, 0xaa, 0xaa, 0xdd, 0xcc, 0xff, 0xee,
-				0xab, 0x89, 0x67, 0x45, 0x23, 0x01, 0x01, 0x01,
+				// data1 (inverse order)
+				0xbb, 0xbb, 0xaa, 0xaa,
+				// data2 (inverse order)
+				0xdd, 0xcc,
+				// data3 (inverse order)
+				0xff, 0xee,
+				// data4 (same order)
+				0x01, 0x02, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab,
+			},
+		},
+		{
+			Name:   "spec",
+			Struct: NewGUID("72962B91-FA75-4AE6-8D28-B404DC7DAF63"),
+			Bytes: []byte{
+				// data1 (inverse order)
+				0x91, 0x2b, 0x96, 0x72,
+				// data2 (inverse order)
+				0x75, 0xfa,
+				// data3 (inverse order)
+				0xe6, 0x4a,
+				// data4 (same order)
+				0x8d, 0x28, 0xb4, 0x04, 0xdc, 0x7d, 0xaf, 0x63,
 			},
 		},
 	}
@@ -108,38 +128,28 @@ func TestLocalizedText(t *testing.T) {
 	cases := []CodecTestCase{
 		{
 			Name:   "nothing",
-			Struct: &LocalizedText{},
+			Struct: NewLocalizedText(""),
 			Bytes:  []byte{0x00},
 		},
 		{
-			Name: "has-locale",
-			Struct: &LocalizedText{
-				EncodingMask: LocalizedTextLocale,
-				Locale:       "foo",
-			},
+			Name:   "has-locale",
+			Struct: NewLocalizedTextWithLocale("", "foo"),
 			Bytes: []byte{
 				0x01,
 				0x03, 0x00, 0x00, 0x00, 0x66, 0x6f, 0x6f,
 			},
 		},
 		{
-			Name: "has-text",
-			Struct: &LocalizedText{
-				EncodingMask: LocalizedTextText,
-				Text:         "bar",
-			},
+			Name:   "has-text",
+			Struct: NewLocalizedText("bar"),
 			Bytes: []byte{
 				0x02,
 				0x03, 0x00, 0x00, 0x00, 0x62, 0x61, 0x72,
 			},
 		},
 		{
-			Name: "has-both",
-			Struct: &LocalizedText{
-				EncodingMask: LocalizedTextLocale | LocalizedTextText,
-				Locale:       "foo",
-				Text:         "bar",
-			},
+			Name:   "has-both",
+			Struct: NewLocalizedTextWithLocale("bar", "foo"),
 			Bytes: []byte{
 				0x03,
 				0x03, 0x00, 0x00, 0x00, 0x66, 0x6f, 0x6f,

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -22,13 +22,13 @@ func TestReadResponse(t *testing.T) {
 					AdditionalHeader:   NewExtensionObject(nil),
 				},
 				Results: []*DataValue{
-					&DataValue{
+					{
 						EncodingMask: DataValueValue,
 						Value:        MustVariant(float32(2.5001559257507324)),
 					},
 				},
 				DiagnosticInfos: []*DiagnosticInfo{
-					&DiagnosticInfo{},
+					{},
 				},
 			},
 			Bytes: []byte{

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,9 @@ func TestApplicationDescription(t *testing.T) {
 		{
 			Name: "Normal",
 			Struct: &ApplicationDescription{
-				ApplicationURI: "app-uri",
-				ProductURI:     "prod-uri",
-				ApplicationName: &LocalizedText{
-					EncodingMask: LocalizedTextText,
-					Text:         "app-name",
-				},
+				ApplicationURI:      "app-uri",
+				ProductURI:          "prod-uri",
+				ApplicationName:     NewLocalizedText("app-name"),
 				ApplicationType:     ApplicationTypeServer,
 				GatewayServerURI:    "gw-uri",
 				DiscoveryProfileURI: "prof-uri",
@@ -53,25 +50,19 @@ func TestApplicationDescriptionArray(t *testing.T) {
 		{
 			Name: "Normal",
 			Struct: []*ApplicationDescription{
-				&ApplicationDescription{
-					ApplicationURI: "app-uri",
-					ProductURI:     "prod-uri",
-					ApplicationName: &LocalizedText{
-						EncodingMask: LocalizedTextText,
-						Text:         "app-name",
-					},
+				{
+					ApplicationURI:      "app-uri",
+					ProductURI:          "prod-uri",
+					ApplicationName:     NewLocalizedText("app-name"),
 					ApplicationType:     ApplicationTypeServer,
 					GatewayServerURI:    "gw-uri",
 					DiscoveryProfileURI: "prof-uri",
 					DiscoveryURLs:       []string{"discov-uri-1", "discov-uri-2"},
 				},
-				&ApplicationDescription{
-					ApplicationURI: "app-uri",
-					ProductURI:     "prod-uri",
-					ApplicationName: &LocalizedText{
-						EncodingMask: LocalizedTextText,
-						Text:         "app-name",
-					},
+				{
+					ApplicationURI:      "app-uri",
+					ProductURI:          "prod-uri",
+					ApplicationName:     NewLocalizedText("app-name"),
 					ApplicationType:     ApplicationTypeServer,
 					GatewayServerURI:    "gw-uri",
 					DiscoveryProfileURI: "prof-uri",

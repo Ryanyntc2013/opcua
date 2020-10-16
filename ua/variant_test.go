@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,11 @@ import (
 
 func TestVariant(t *testing.T) {
 	cases := []CodecTestCase{
+		{
+			Name:   "null",
+			Struct: MustVariant(nil),
+			Bytes:  []byte{0x0},
+		},
 		{
 			Name:   "boolean",
 			Struct: MustVariant(false),
@@ -150,13 +155,18 @@ func TestVariant(t *testing.T) {
 		},
 		{
 			Name:   "GUID",
-			Struct: MustVariant(NewGUID("AAAABBBB-CCDD-EEFF-0101-0123456789AB")),
+			Struct: MustVariant(NewGUID("72962B91-FA75-4AE6-8D28-B404DC7DAF63")),
 			Bytes: []byte{
 				// variant encoding mask
 				0x0e,
-				// value
-				0xbb, 0xbb, 0xaa, 0xaa, 0xdd, 0xcc, 0xff, 0xee,
-				0xab, 0x89, 0x67, 0x45, 0x23, 0x01, 0x01, 0x01,
+				// data1 (inverse order)
+				0x91, 0x2b, 0x96, 0x72,
+				// data2 (inverse order)
+				0x75, 0xfa,
+				// data3 (inverse order)
+				0xe6, 0x4a,
+				// data4 (same order)
+				0x8d, 0x28, 0xb4, 0x04, 0xdc, 0x7d, 0xaf, 0x63,
 			},
 		},
 		{
@@ -238,11 +248,8 @@ func TestVariant(t *testing.T) {
 			},
 		},
 		{
-			Name: "LocalizedText",
-			Struct: MustVariant(&LocalizedText{
-				EncodingMask: LocalizedTextText,
-				Text:         "Gross value",
-			}),
+			Name:   "LocalizedText",
+			Struct: MustVariant(NewLocalizedText("Gross value")),
 			Bytes: []byte{
 				// variant encoding mask
 				0x15,
@@ -254,7 +261,7 @@ func TestVariant(t *testing.T) {
 			},
 		},
 		{
-			Name: "ExtensionObjeject",
+			Name: "ExtensionObject",
 			Struct: MustVariant(NewExtensionObject(
 				&AnonymousIdentityToken{PolicyID: "anonymous"},
 			)),
@@ -272,7 +279,7 @@ func TestVariant(t *testing.T) {
 			},
 		},
 		{
-			Name: "ExtensionObjeject - ServerStatusDataType",
+			Name: "ExtensionObject - ServerStatusDataType",
 			Struct: MustVariant(NewExtensionObject(
 				&ServerStatusDataType{
 					StartTime:   time.Date(2019, 3, 29, 19, 45, 3, 816525000, time.UTC), // Mar 29, 2019 20:45:03.816525000 CET
@@ -287,7 +294,7 @@ func TestVariant(t *testing.T) {
 						BuildDate:        time.Time{},
 					},
 					SecondsTillShutdown: 0,
-					ShutdownReason:      &LocalizedText{},
+					ShutdownReason:      NewLocalizedText(""),
 				},
 			)),
 			Bytes: []byte{
@@ -445,27 +452,6 @@ func TestVariant(t *testing.T) {
 				0x01, 0x00, 0x00, 0x00,
 			},
 		},
-		{
-			Name: "[0][0][0]uint32",
-			Struct: MustVariant([][][]uint32{
-				{{}, {}},
-				{{}, {}},
-				{{}, {}},
-			}),
-			Bytes: []byte{
-				// variant encoding mask
-				0xc7,
-				// array length
-				0x00, 0x00, 0x00, 0x00,
-				// array values
-				// array dimensions length
-				0x03, 0x00, 0x00, 0x00,
-				// array dimensions
-				0x03, 0x00, 0x00, 0x00,
-				0x02, 0x00, 0x00, 0x00,
-				0x00, 0x00, 0x00, 0x00,
-			},
-		},
 	}
 	RunCodecTest(t, cases)
 }
@@ -569,9 +555,9 @@ func TestArray(t *testing.T) {
 			// array values
 			0x01, 0x00, 0x00, 0x00,
 			0x01, 0x00, 0x00, 0x00,
-			// array dimesions length
+			// array dimensions length
 			0xff, 0xff, 0xff, 0xff, // -1
-			// array dimesions
+			// array dimensions
 			0x01, 0x00, 0x00, 0x00,
 			0x01, 0x00, 0x00, 0x00,
 		}
@@ -590,14 +576,33 @@ func TestArray(t *testing.T) {
 			// array values
 			0x01, 0x00, 0x00, 0x00,
 			0x01, 0x00, 0x00, 0x00,
-			// array dimesions length
+			// array dimensions length
 			0x02, 0x00, 0x00, 0x00,
-			// array dimesions
+			// array dimensions
 			0x01, 0x00, 0x00, 0x00,
 			0xff, 0xff, 0xff, 0xff, // -1
 		}
 
 		_, err := Decode(b, MustVariant([]uint32{0}))
+		if got, want := err, StatusBadEncodingLimitsExceeded; !errors.Equal(got, want) {
+			t.Fatalf("got error %#v want %#v", got, want)
+		}
+	})
+	t.Run("dimensions zero", func(t *testing.T) {
+		b := []byte{
+			// variant encoding mask
+			0xc7,
+			// array length
+			0x00, 0x00, 0x00, 0x00,
+			// array values
+			// array dimensions length
+			0x02, 0x00, 0x00, 0x00,
+			// array dimensions
+			0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00,
+		}
+
+		_, err := Decode(b, MustVariant([][]uint32{{}, {}}))
 		if got, want := err, StatusBadEncodingLimitsExceeded; !errors.Equal(got, want) {
 			t.Fatalf("got error %#v want %#v", got, want)
 		}
@@ -610,6 +615,13 @@ func TestSet(t *testing.T) {
 		va  *Variant
 		err error
 	}{
+		{
+			v: nil,
+			va: &Variant{
+				mask:  byte(TypeIDNull),
+				value: nil,
+			},
+		},
 		{
 			v: []byte{0xca, 0xfe},
 			va: &Variant{
@@ -690,6 +702,13 @@ func TestSliceDim(t *testing.T) {
 		err error
 	}{
 		// happy flows
+		{
+			v:   nil,
+			et:  nil,
+			dim: nil,
+			len: 0,
+			err: nil,
+		},
 		{
 			v:   "a",
 			et:  reflect.TypeOf(""),
@@ -810,7 +829,7 @@ func TestVariantValueHelpers(t *testing.T) {
 			fn:   func(v *Variant) interface{} { return v.String() },
 		},
 		{
-			v:    &LocalizedText{Text: "a"},
+			v:    NewLocalizedText("a"),
 			want: "a",
 			fn:   func(v *Variant) interface{} { return v.String() },
 		},
@@ -970,8 +989,8 @@ func TestVariantValueHelpers(t *testing.T) {
 			fn:   func(v *Variant) interface{} { return v.LocalizedText() },
 		},
 		{
-			v:    &LocalizedText{Text: "abc"},
-			want: &LocalizedText{Text: "abc"},
+			v:    NewLocalizedText("abc"),
+			want: NewLocalizedText("abc"),
 			fn:   func(v *Variant) interface{} { return v.LocalizedText() },
 		},
 

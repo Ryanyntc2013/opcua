@@ -12,7 +12,7 @@
 
 A native Go implementation of the OPC/UA Binary Protocol.
 
-You need go1.12 or higher. We test with the current and previous Go version.
+You need go1.13 or higher. We test with the current and previous Go version.
 
 [![CircleCI](https://circleci.com/gh/gopcua/opcua.svg?style=shield)](https://circleci.com/gh/gopcua/opcua)
 [![GitHub](https://github.com/gopcua/opcua/workflows/gopuca/badge.svg)](https://github.com/gopcua/opcua/actions)
@@ -24,7 +24,7 @@ You need go1.12 or higher. We test with the current and previous Go version.
 ## Quickstart
 
 ```sh
-# make sure you have go1.12 or higher
+# make sure you have go1.13 or higher
 
 # install library
 go get -u github.com/gopcua/opcua
@@ -115,11 +115,11 @@ The current set of supported services is only for the high-level client.
 |                             | AddReferences                 |           |              |
 |                             | DeleteNodes                   |           |              |
 |                             | DeleteReferences              |           |              |
-| View Service Set            | Browse                        | Started   |              |
-|                             | BrowseNext                    | Started   |              |
+| View Service Set            | Browse                        | Yes       |              |
+|                             | BrowseNext                    | Yes       |              |
 |                             | TranslateBrowsePathsToNodeIds |           |              |
-|                             | RegisterNodes                 |           |              |
-|                             | UnregisterNodes               |           |              |
+|                             | RegisterNodes                 | Yes       |              |
+|                             | UnregisterNodes               | Yes       |              |
 | Query Service Set           | QueryFirst                    |           |              |
 |                             | QueryNext                     |           |              |
 | Attribute Service Set       | Read                          | Yes       |              |

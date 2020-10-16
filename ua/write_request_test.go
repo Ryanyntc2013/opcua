@@ -1,4 +1,4 @@
-// Copyright 2018-2019 opcua authors. All rights reserved.
+// Copyright 2018-2020 opcua authors. All rights reserved.
 // Use of this source code is governed by a MIT-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ func TestWriteRequest(t *testing.T) {
 					AdditionalHeader: NewExtensionObject(nil),
 				},
 				NodesToWrite: []*WriteValue{
-					&WriteValue{
+					{
 						NodeID:      NewFourByteNodeID(0, 2256),
 						AttributeID: AttributeIDValue,
 						Value: &DataValue{
@@ -82,7 +82,7 @@ func TestWriteRequest(t *testing.T) {
 					AdditionalHeader: NewExtensionObject(nil),
 				},
 				NodesToWrite: []*WriteValue{
-					&WriteValue{
+					{
 						NodeID:      NewFourByteNodeID(0, 2256),
 						AttributeID: AttributeIDValue,
 						Value: &DataValue{
@@ -92,7 +92,7 @@ func TestWriteRequest(t *testing.T) {
 							ServerTimestamp: time.Date(2018, time.September, 17, 14, 28, 29, 112000000, time.UTC),
 						},
 					},
-					&WriteValue{
+					{
 						NodeID:      NewFourByteNodeID(0, 2256),
 						AttributeID: AttributeIDValue,
 						Value: &DataValue{
